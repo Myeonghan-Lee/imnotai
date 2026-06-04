@@ -4,7 +4,7 @@ from google import genai
 from google.genai import types
 
 # 1. Streamlit 웹 페이지 설정
-st.set_page_config(page_title="🧠한글 AI 티 제거기 (im-not-ai Web)", layout="wide")
+st.set_page_config(page_title="한글 AI 티 제거기 (im-not-ai Web)", layout="wide")
 
 st.title("✍️ 한글 AI 티 제거기 (im-not-ai Web)")
 st.caption("AI가 쓴 어색한 한국어 문체를 감지하고, 고유 정보는 유지하며 자연스럽게 교정합니다.")
