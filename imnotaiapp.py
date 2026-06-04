@@ -7,13 +7,25 @@ from google.genai import types
 st.set_page_config(page_title="한글 AI 티 제거기 (im-not-ai Web)", layout="wide")
 
 st.title("✍️ 한글 AI 티 제거기 (im-not-ai Web)")
-st.caption("AI가 쓴 어색한 한국어 문체를 감지하고, 고유 정보는 100% 보존하며 자연스럽게 교정합니다.")
+st.caption("AI가 쓴 어색한 한국어 문체를 감지하고, 고유 정보는 유지하며 자연스럽게 교정합니다.")
 
 # 2. 사이드바 - 사용자 설정
 with st.sidebar:
     st.header("⚙️ 설정 및 API Key")
-    # API 키 입력창 (사용자 개인 키 사용 권장)
+    # API 키 입력창
     api_key = st.text_input("Google Gemini API Key", type="password", help="Google AI Studio에서 발급받은 API Key를 입력하세요.")
+    
+    # 사용할 최신 모델 선택 (404 에러 방지를 위해 models/ 접두사 명시)
+    model_option = st.selectbox(
+        "사용할 Gemini 모델",
+        [
+            "models/gemini-2.5-flash",
+            "models/gemini-3.5-flash",
+            "models/gemini-3.1-flash-lite"
+        ],
+        index=0,
+        help="Google API 정책에 맞춰 활성화되어 있는 최신 stable 모델을 사용합니다."
+    )
     
     st.markdown("---")
     # 윤문 강도 조절 (과윤문 방지용 타겟값)
@@ -35,7 +47,7 @@ IM_NOT_AI_SYSTEM_INSTRUCTION = f"""
 4. 과윤문 제한: 변경율은 {rewrite_intensity}% 수준을 초과하지 않는 한에서 어색함을 지우는 데 집중합니다.
 
 [탐지 및 개선할 주요 패턴 예시]
-- 영어 직역/번역투 ('~를 통해', '~에 있어서', '~에 의해') -> 한국어식 주체적 서술형으로 변경.
+- 영어 직역/번역투 ('~를 통해', '~에 있어서', '~가 만든') -> 한국어식 주체적 서술형으로 변경.
 - 도식적 나열 ('첫째, 둘째, 셋째') -> 문맥에 맞는 매끄러운 연결 문장으로 완화.
 - 기계적인 접속사 ('그리고', '하지만', '또한') -> 어미 연결이나 과감한 삭제로 흐름 정돈.
 - AI형 상투적 문구 ('결론적으로', '시사하는 바가 크다') -> 불필요할 경우 생략하거나 세련되게 수정.
@@ -78,9 +90,9 @@ if st.button("AI 티 제거하기", type="primary"):
                 # google-genai 최신 SDK 기반 클라이언트 선언
                 client = genai.Client(api_key=api_key)
                 
-                # Gemini 1.5 Flash 모델 설정 및 정형화된 JSON 출력 요구
+                # 정형화된 JSON 출력 요구 및 시스템 명령어 전달
                 response = client.models.generate_content(
-                    model="gemini-1.5-flash",
+                    model=model_option,  # 사이드바에서 선택된 최신 모델 ID
                     contents=f"아래 텍스트를 개선하십시오. 타겟 스타일: {target_tone}\n\n[대상 텍스트]\n{input_text}",
                     config=types.GenerateContentConfig(
                         system_instruction=IM_NOT_AI_SYSTEM_INSTRUCTION,
